@@ -3,12 +3,15 @@ import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
 import personService from './services/persons'
+import Notification from './components/Notification'
 
 const App = () => {
     const [ persons, setPersons] = useState([])
     const [ newName, setNewName ] = useState('')
     const [ newNumber, setNewNumber ] = useState('')
     const [ filter, setFilter ] = useState('')
+    const [ notificationMessage, setNotificationMessage] = useState(null)
+    const [ error, setError] = useState(false)
 
     useEffect(() => {
         personService
@@ -18,8 +21,23 @@ const App = () => {
             })
     }, [])
 
-    const addPerson = (event) => {
+    const setTimedNotificationMessage = message => {
+        setNotificationMessage(message)
+        setTimeout(() => {
+            setNotificationMessage(null)
+        }, 5000)
+    }
 
+    const setTimedErrorMessage = message => {
+        setError(true)
+        setNotificationMessage(message)
+        setTimeout(() => {
+            setNotificationMessage(null)
+            setError(false)
+        }, 5000)
+    }
+
+    const addPerson = (event) => {
         event.preventDefault()
         const personObject = {
             name: newName,
@@ -27,8 +45,8 @@ const App = () => {
         } 
 
         if (persons.map((person) => person.name).includes(newName)) {
-            if (!window.confirm(`${newName} is already added to phonebook,`
-                               +` replace old number with a new one?`)) {
+            if (!window.confirm(`${newName} is already added to phonebook, `
+                               +`replace old number with a new one?`)) {
                 return
             }
 
@@ -38,11 +56,10 @@ const App = () => {
                 .then(returnedPerson => {
                     setPersons(persons.map(person => 
                         person.id !== id ? person : returnedPerson))
-                    
+                        setTimedNotificationMessage(`Updated ${personObject.name}`)
                 }).catch(error => {
-                    alert(
-                        `Person ${newName} could not be updated`
-                    )
+                    setTimedErrorMessage(`Information of ${personObject.name} `+
+                                         `has already been removed from server`)
                 })
 
         } else {
@@ -52,6 +69,7 @@ const App = () => {
                     setPersons(persons.concat(returnedPerson))
                     setNewName('')
                     setNewNumber('')
+                    setTimedNotificationMessage(`Added ${personObject.name}`)
                 })
         }
     }
@@ -70,6 +88,7 @@ const App = () => {
                     `Person ${person.name} could not be deleted`
                 )
             })
+        setTimedNotificationMessage(`Deleted ${person.name}`) 
     }
 
     const handleNameChange = (event) => {
@@ -91,6 +110,8 @@ const App = () => {
     return (
       <div>
         <h2>Phonebook</h2>
+        <Notification message={notificationMessage} error={error}/>
+
         <Filter value={filter} onChange={handleFilterChange}/>
 
         <h2>Add a new</h2>
