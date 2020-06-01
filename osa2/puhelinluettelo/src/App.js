@@ -10,8 +10,7 @@ const App = () => {
     const [ newName, setNewName ] = useState('')
     const [ newNumber, setNewNumber ] = useState('')
     const [ filter, setFilter ] = useState('')
-    const [ notificationMessage, setNotificationMessage] = useState(null)
-    const [ error, setError] = useState(false)
+    const [ notification, setNotification ] = useState(null)
 
     useEffect(() => {
         personService
@@ -21,19 +20,10 @@ const App = () => {
             })
     }, [])
 
-    const setTimedNotificationMessage = message => {
-        setNotificationMessage(message)
+    const setTimedNotification = (message, error=false) => {
+        setNotification({message, error})
         setTimeout(() => {
-            setNotificationMessage(null)
-        }, 5000)
-    }
-
-    const setTimedErrorMessage = message => {
-        setError(true)
-        setNotificationMessage(message)
-        setTimeout(() => {
-            setNotificationMessage(null)
-            setError(false)
+            setNotification(null)
         }, 5000)
     }
 
@@ -56,10 +46,11 @@ const App = () => {
                 .then(returnedPerson => {
                     setPersons(persons.map(person => 
                         person.id !== id ? person : returnedPerson))
-                        setTimedNotificationMessage(`Updated ${personObject.name}`)
+                        setTimedNotification(`Updated ${personObject.name}`)
                 }).catch(error => {
-                    setTimedErrorMessage(`Information of ${personObject.name} `+
-                                         `has already been removed from server`)
+                    setTimedNotification(`Information of ${personObject.name} `+
+                                         `has already been removed from server`
+                                         , error=true)
                 })
 
         } else {
@@ -69,7 +60,7 @@ const App = () => {
                     setPersons(persons.concat(returnedPerson))
                     setNewName('')
                     setNewNumber('')
-                    setTimedNotificationMessage(`Added ${personObject.name}`)
+                    setTimedNotification(`Added ${personObject.name}`)
                 })
         }
     }
@@ -88,7 +79,7 @@ const App = () => {
                     `Person ${person.name} could not be deleted`
                 )
             })
-        setTimedNotificationMessage(`Deleted ${person.name}`) 
+        setTimedNotification(`Deleted ${person.name}`) 
     }
 
     const handleNameChange = (event) => {
@@ -110,7 +101,7 @@ const App = () => {
     return (
       <div>
         <h2>Phonebook</h2>
-        <Notification message={notificationMessage} error={error}/>
+        <Notification notification={notification}/>
 
         <Filter value={filter} onChange={handleFilterChange}/>
 
