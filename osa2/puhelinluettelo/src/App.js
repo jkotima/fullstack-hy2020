@@ -62,6 +62,9 @@ const App = () => {
                     setNewNumber('')
                     setTimedNotification(`Added ${personObject.name}`)
                 })
+                .catch(error => {
+                    setTimedNotification(error.response.data.error, error=true)
+                })
         }
     }
     const deletePerson = id => {
